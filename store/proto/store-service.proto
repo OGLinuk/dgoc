@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message StoreRequest {
+    string collected = 1;
+}
+
+message StoreResponse {
+    bool success = 1;
+}
+
+service StoreService {
+    rpc Store(StoreRequest) returns (StoreResponse);
+}

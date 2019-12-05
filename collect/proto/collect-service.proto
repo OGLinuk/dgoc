@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message CollectRequest {
+    string seed = 1;
+}
+
+message CollectResponse {
+    repeated string collected = 1;
+}
+
+service CollectService {
+    rpc Collect(CollectRequest) returns (CollectResponse);
+}
