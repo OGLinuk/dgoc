@@ -8,11 +8,16 @@ import (
 	"os"
 	"strconv"
 
-	cpb "./proto"
+	cpb "github.com/OGLinuk/dgoc/collect/proto"
+	spb "github.com/OGLinuk/dgoc/store/proto"
 	"google.golang.org/grpc"
 )
 
 type server struct{}
+
+var (
+	storeClient spb.StoreServiceClient
+)
 
 func (s *server) Collect(ctx context.Context, req *cpb.CollectRequest) (*cpb.CollectResponse, error) {
 	seed := fmt.Sprintf("https://%s", req.GetSeed())
@@ -23,11 +28,36 @@ func (s *server) Collect(ctx context.Context, req *cpb.CollectRequest) (*cpb.Col
 		return nil, err
 	}
 
+	sReq := &spb.StoreRequest{
+		Crawled:   seed,
+		Collected: collected,
+	}
+
+	_, err = storeClient.Store(ctx, sReq)
+	if err != nil {
+		return nil, err
+	}
+
 	return &cpb.CollectResponse{Collected: collected}, nil
 }
 
+func gRPCStoreInit() {
+	log.Println("Initializing connection to store gRPC server ...")
+
+	conn, err := grpc.Dial("store-service:8002", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Failed to grpc.Dial: %s", err.Error())
+	}
+
+	storeClient = spb.NewStoreServiceClient(conn)
+
+	log.Println("Successfully connected to store gRPC server ...")
+}
+
 func gRPCServerInit() {
-	log.Println("Initializing gRPC server ...")
+	gRPCStoreInit()
+
+	log.Println("Initializing collect gRPC server ...")
 
 	os.Setenv("SERVER_HOST", "0.0.0.0")
 	os.Setenv("SERVER_PORT", "8001")
@@ -52,5 +82,5 @@ func gRPCServerInit() {
 		}
 	}()
 
-	log.Printf("gRPC server running at %s:%d", SHOST, SPORT)
+	log.Printf("collect gRPC server running at %s:%d ...", SHOST, SPORT)
 }

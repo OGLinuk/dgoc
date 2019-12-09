@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	cpb "./proto"
+	cpb "github.com/OGLinuk/dgoc/collect/proto"
 	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
@@ -25,6 +25,8 @@ func main() {
 
 	collectClient = cpb.NewCollectServiceClient(conn)
 
+	log.Println("Successfully connected to collect gRPC server ...")
+
 	grouter := gin.Default()
 
 	corsConfig := cors.DefaultConfig()
@@ -35,5 +37,5 @@ func main() {
 	grouter.Use(cors.New(corsConfig))
 
 	log.Println("Serving on 0.0.0.0:9001 ...")
-	log.Fatal(grouter.Run("0.0.0:9001"), nil)
+	log.Fatal(grouter.Run("0.0.0.0:9001"), nil)
 }

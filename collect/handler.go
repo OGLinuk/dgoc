@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	cpb "./proto"
+	cpb "github.com/OGLinuk/dgoc/collect/proto"
 	"github.com/gin-gonic/gin"
 )
 
