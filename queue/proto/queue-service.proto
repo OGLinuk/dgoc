@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+message QueuePushRequest {
+    string enqueue = 1;
+}
+
+message QueuePushResponse {
+    bool success = 1;
+}
+
+message QueuePopRequest {
+    string key = 1;
+}
+
+message QueuePopResponse {
+    string dequeued = 1;
+}
+
+service QueueService {
+    rpc Push(QueuePushRequest) returns (QueuePushResponse);
+    rpc Pop(QueuePopRequest) returns (QueuePopResponse);
+}
