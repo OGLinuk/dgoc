@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 
+	qpb "github.com/OGLinuk/dgoc/queue/proto"
 	spb "github.com/OGLinuk/dgoc/store/proto"
 	"google.golang.org/grpc"
 )
@@ -16,7 +17,8 @@ import (
 type server struct{}
 
 var (
-	mdb *MongoStore
+	mdb     *MongoStore
+	qClient qpb.QueueServiceClient
 )
 
 func (s *server) Store(ctx context.Context, req *spb.StoreRequest) (*spb.StoreResponse, error) {
@@ -30,20 +32,24 @@ func (s *server) Store(ctx context.Context, req *spb.StoreRequest) (*spb.StoreRe
 		return nil, err
 	}
 
-	if err = mdb.PutUncrawled("enqueue", req.GetCollected()); err != nil {
+	collected := req.GetCollected()
+
+	if err = mdb.PutUncrawled("queued", collected); err != nil {
 		return nil, err
 	}
 
-	/*
-		docs, err := mdb.Get("en.wikipedia.org")
-		if err != nil {
-			return nil, err
-		}
+	for _, c := range collected {
+		qClient.Push(ctx, &qpb.QueuePushRequest{Enqueue: c})
+	}
 
-		for _, doc := range docs {
-			log.Printf("%v", doc)
-		}
-	*/
+	log.Printf("Collected: %d", len(collected))
+
+	qSize, err := qClient.Size(ctx, &qpb.QueueSizeRequest{Key: "tmp"})
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("Queue size: %d", qSize.Size)
 
 	return &spb.StoreResponse{Success: true}, nil
 }
@@ -56,7 +62,22 @@ func init() {
 	}
 }
 
+func gRPCQueueInit() {
+	log.Println("Initializing connection to queue gRPC server ...")
+
+	conn, err := grpc.Dial("queue-service:8003", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Failed to grpc.Dial: %s", err.Error())
+	}
+
+	qClient = qpb.NewQueueServiceClient(conn)
+
+	log.Println("Successfully connected to queue gRPC server ...")
+}
+
 func gRPCServerInit() {
+	gRPCQueueInit()
+
 	log.Println("Initializing store gRPC server ...")
 
 	os.Setenv("SERVER_HOST", "0.0.0.0")
