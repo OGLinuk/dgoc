@@ -43,7 +43,7 @@ type server struct {
 func (s *server) Size(ctx context.Context, req *qpb.QueueSizeRequest) (*qpb.QueueSizeResponse, error) {
 	log.Printf("%v", req)
 
-	return &qpb.QueueSizeResponse{Size: int64(len(s.Queue)), Enqueued: s.Queue}, nil
+	return &qpb.QueueSizeResponse{Size: int64(len(s.Queue)), Queued: s.Queue}, nil
 }
 
 func (s *server) Push(ctx context.Context, req *qpb.QueuePushRequest) (*qpb.QueuePushResponse, error) {
