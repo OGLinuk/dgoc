@@ -16,7 +16,17 @@ message QueuePopResponse {
     string dequeued = 1;
 }
 
+message QueueSizeRequest {
+    string key = 1;
+}
+
+message QueueSizeResponse {
+    int64 size = 1;
+    repeated string queued = 2;
+}
+
 service QueueService {
     rpc Push(QueuePushRequest) returns (QueuePushResponse);
     rpc Pop(QueuePopRequest) returns (QueuePopResponse);
+    rpc Size(QueueSizeRequest) returns (QueueSizeResponse);
 }

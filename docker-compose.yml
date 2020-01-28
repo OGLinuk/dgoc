@@ -33,6 +33,22 @@ services:
       - DB=mongodb://mongodb:27017/dgoc
     networks:
       - tiered
+  q:
+    hostname: queue
+    container_name: queue-service
+    build: ./queue
+    depends_on:
+      - s
+    ports:
+      - 8003:8003
+    volumes:
+      - .:/usr/src/application
+    environment:
+      - ENV=development
+      - HOST=0.0.0.0
+      - PORT=8003
+    networks:
+      - tiered
   mongodb:
     hostname: database
     container_name: mongo-database
