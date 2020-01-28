@@ -88,7 +88,8 @@ func gRPCServerInit() {
 
 	srvr := &server{
 		//rc: NewRedisClient(),
-		Queue: make([]string, 1),
+		Queue:    make([]string, 1),
+		dequeued: make(map[string]struct{}),
 	}
 
 	/*

@@ -5,7 +5,7 @@ services:
     container_name: collect-service
     build: ./collect
     depends_on:
-      - s
+      - q
     ports:
       - 9001:9001
     volumes:
